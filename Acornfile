@@ -1,13 +1,28 @@
 containers: {
     guestbook: {
-
+        image: "dbodky/guestbook-demo:v1.1.0"
+        env: {
+            GUESTBOOK_REDIS_HOST: "redis"
+            GUESTBOOK_DB_USER: "guestbookuser"
+            GUESTBOOK_DB_PASSWORD: "password"
+            GUESTBOOK_DB_NAME: "guestbookdb"
+            GUESTBOOK_DB_HOST: "postgres"
+        }
+        ports: publish: "guestbook:8080/http"
     }
 
     postgres: {
-
+        image: "postgres:12"
+        env: {
+            POSTGRES_DB: "guestbookdb"
+            POSTGRES_USER: "guestbookuser"
+            POSTGRES_PASSWORD: "password"
+        }
+        ports: "postgres:5432/tcp"
     }
 
     redis: {
-
+        image: "redis:7"
+        ports: "redis:6379/tcp"
     }
 }
