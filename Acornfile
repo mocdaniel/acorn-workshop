@@ -9,6 +9,8 @@ containers: {
             GUESTBOOK_DB_HOST: "postgres"
         }
         ports: publish: "guestbook:8080/http"
+        dependsOn: ["redis", "postgres"]
+        probes: readiness: http: url: "http://localhost:8080"
     }
 
     postgres: {
@@ -19,10 +21,12 @@ containers: {
             POSTGRES_PASSWORD: "password"
         }
         ports: "postgres:5432/tcp"
+        probes: readiness: tcp: url: "tcp://localhost:5432"
     }
 
     redis: {
         image: "redis:7"
         ports: "redis:6379/tcp"
+        probes: readiness: tcp: url: "tcp://localhost:6379"
     }
 }
