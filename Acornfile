@@ -1,11 +1,28 @@
+args: {
+    // How many containers of the frontend to spin up
+    replicas: 3
+
+    // Name of the database to connect to
+    dbName: "guestbookdb"
+
+    // User to connect to the database with
+    dbUser: ""
+
+    // Password to connect to the database with
+    dbPassword: ""
+}
+
 containers: {
     guestbook: {
+        if !args.dev {
+            scale: args.replicas
+        }
         image: "dbodky/guestbook-demo:v1.1.0"
         env: {
             GUESTBOOK_REDIS_HOST: "redis"
             GUESTBOOK_DB_USER: "secret://db-auth/username"
             GUESTBOOK_DB_PASSWORD: "secret://db-auth/password"
-            GUESTBOOK_DB_NAME: "guestbookdb"
+            GUESTBOOK_DB_NAME: args.dbName
             GUESTBOOK_DB_HOST: "postgres"
         }
         ports: publish: "guestbook:8080/http"
@@ -37,8 +54,8 @@ secrets: {
     "db-auth": {
         type: "basic"
         data: {
-            username: ""
-            password: ""
+            username: args.dbUser
+            password: args.dbPassword
         }
     }
 }
