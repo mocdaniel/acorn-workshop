@@ -1,0 +1,13 @@
+containers: {
+    guestbook: {
+
+    }
+
+    postgres: {
+
+    }
+
+    redis: {
+
+    }
+}
