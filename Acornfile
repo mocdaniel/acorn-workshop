@@ -1,0 +1,66 @@
+args: {
+    // How many containers of the frontend to spin up
+    replicas: 3
+
+    // Name of the database to connect to
+    dbName: "guestbookdb"
+
+    // User to connect to the database with
+    dbUser: ""
+
+    // Password to connect to the database with
+    dbPassword: ""
+}
+
+containers: {
+    guestbook: {
+        if !args.dev {
+            scale: args.replicas
+        }
+        image: "dbodky/guestbook-demo:v1.1.0"
+        env: {
+            GUESTBOOK_REDIS_HOST: "redis"
+            GUESTBOOK_DB_USER: "secret://db-auth/username"
+            GUESTBOOK_DB_PASSWORD: "secret://db-auth/password"
+            GUESTBOOK_DB_NAME: args.dbName
+            GUESTBOOK_DB_HOST: "postgres"
+        }
+        ports: publish: "guestbook:8080/http"
+        dependsOn: ["redis", "postgres"]
+        probes: readiness: http: url: "http://localhost:8080"
+    }
+
+    postgres: {
+        image: "postgres:12"
+        env: {
+            POSTGRES_DB: "guestbookdb"
+            POSTGRES_USER: "secret://db-auth/username"
+            POSTGRES_PASSWORD: "secret://db-auth/password"
+        }
+        ports: "postgres:5432/tcp"
+        probes: readiness: tcp: url: "tcp://localhost:5432"
+        dirs: "/var/lib/postgresql/data": "volume://db-data?subpath=data"
+    }
+
+    redis: {
+        image: "redis:7"
+        ports: "redis:6379/tcp"
+        probes: readiness: tcp: url: "tcp://localhost:6379"
+        dirs: "/data": "volume://redis-data"
+    }
+}
+
+secrets: {
+    "db-auth": {
+        type: "basic"
+        data: {
+            username: args.dbUser
+            password: args.dbPassword
+        }
+    }
+}
+
+volumes: {
+    "db-data": {}
+    "redis-data": {}
+}
